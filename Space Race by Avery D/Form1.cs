@@ -35,6 +35,7 @@ namespace Space_Race_by_Avery_D
         //meteors
         List<Rectangle> meteors = new List<Rectangle>();
         List<int> meteorSpeeds = new List<int>();
+        // List<int> meteorSides = new List<int>();
         //meteor positions random number generator
         Random randGen = new Random();
         //meteor colour
@@ -46,6 +47,7 @@ namespace Space_Race_by_Avery_D
 
         //start
         int countdown = 3;
+        int go = 5;
 
 
 
@@ -96,22 +98,32 @@ namespace Space_Race_by_Avery_D
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
             //player 1
-            e.Graphics.FillRectangle(grayBrush, player1);
+            e.Graphics.FillEllipse(grayBrush, player1);
             e.Graphics.DrawLine(redPen, player1.X - 3, player1.Y + 3, player1.X + player1.Width / 2 + 3, player1.Y - 10);
             e.Graphics.DrawLine(redPen, player1.X + player1.Width + 3, player1.Y + 3, player1.X + player1.Width / 2 - 3, player1.Y - 10);
+            e.Graphics.DrawLine(redPen, player1.X, player1.Y, player1.X + player1.Width, player1.Y);
+            e.Graphics.FillEllipse(blackBrush, player1.X + 5, player1.Y + 5, 10, 10);
             if (wPressed == true)
+            {
+                e.Graphics.FillEllipse(fireBrush, player1.X + 2, player1.Height, 4, 15) ;
+            }
+
+            //player 1
+            e.Graphics.FillEllipse(grayBrush, player2);
+            e.Graphics.DrawLine(bluePen, player2.X - 3, player2.Y + 3, player2.X + player2.Width / 2 + 3, player2.Y - 10);
+            e.Graphics.DrawLine(bluePen, player2.X + player2.Width + 3, player2.Y + 3, player2.X + player2.Width / 2 - 3, player2.Y - 10);
+            e.Graphics.DrawLine(bluePen, player2.X, player2.Y, player2.X + player2.Width, player2.Y);
+            e.Graphics.FillEllipse(blackBrush, player2.X + 5, player2.Y + 5, 10, 10);
+            if (upPressed == true)
             {
                 //draw fire
             }
 
-            //player 1
-            e.Graphics.FillRectangle(grayBrush, player2);
-            e.Graphics.DrawLine(bluePen, player2.X - 3, player2.Y + 3, player2.X + player2.Width / 2 + 3, player2.Y - 10);
-            e.Graphics.DrawLine(bluePen, player2.X + player2.Width + 3, player2.Y + 3, player2.X + player2.Width / 2 - 3, player2.Y - 10);
-            if (upPressed == true)
+            //meteors
+            for (int i = 0; i < meteors.Count; i++)
             {
-                //draw fire
-            }    
+                e.Graphics.FillEllipse(whiteBrush, meteors[i]);
+            }
 
         }
 
@@ -127,7 +139,6 @@ namespace Space_Race_by_Avery_D
                 player1.Y += playerSpeed;
             }
             //move player 2
-            //move player 1
             if (upPressed == true && player2.Y > 0)
             {
                 player2.Y -= playerSpeed;
@@ -137,6 +148,78 @@ namespace Space_Race_by_Avery_D
                 player2.Y += playerSpeed;
             }
 
+            //create meteors
+            //random percent occurrance
+            int randValue = randGen.Next(1, 101);
+            //left or right
+            int side = randGen.Next(1, 3);
+            //random speed
+            int randSpeed = randGen.Next(5, 14);
+            if (randValue < 20)
+            {
+                int x = 0;
+
+                if (side == 1)
+                {
+                    //set meteor to appear on left
+                    x = 0;
+                    meteorSpeeds.Add(randSpeed);
+                }
+                else if (side == 2)
+                {
+                    //set meteor to appear on right
+                    x = this.Width;
+                    meteorSpeeds.Add(randSpeed * -1);
+                }
+
+                int randY = randGen.Next(1, this.Height - 40);
+                Rectangle newMeteor = new Rectangle(x, randY, 20, 5);
+                meteors.Add(newMeteor);
+            }
+
+            //move meteors
+            for (int i = 0; i < meteors.Count; i++)
+            {
+                int x = meteors[i].X + meteorSpeeds[i];
+                meteors[i] = new Rectangle(x, meteors[i].Y, meteors[i].Width, meteors[i].Height);
+            }
+
+            //check for collision with meteors
+            for (int i = 0; i < meteors.Count; i++)
+            {
+                if (player1.IntersectsWith(meteors[i]))
+                {
+                    player1.Y = this.Height - player1.Height;
+                    //play explosion sound
+                }
+                if (player2.IntersectsWith(meteors[i]))
+                {
+                    player2.Y = this.Height - player2.Height;
+                    //play explosion sound
+                }
+            }
+
+            //check if either player reached the other side and add point
+            if (player1.Y < 0)
+            {
+                player1Score+=1;
+                player1.Y = this.Height - player1.Height;
+            }
+            if (player2.Y < 0)
+            {
+                player2Score+=1;
+                player2.Y = this.Height - player2.Height;
+            }
+            if (player1Score == 3 || player2Score == 3)
+            {
+                gameTimer.Stop();
+            }
+            //refresh scores
+            player1ScoreLabel.Text = $"{player1Score}";
+            player2ScoreLabel.Text = $"{player2Score}";
+
+
+
             Refresh();
         }
 
@@ -144,14 +227,20 @@ namespace Space_Race_by_Avery_D
         {
             startLabel.Text = $"{countdown}";
             countdown--;
+            go--;
             if (countdown == -1)
             {
                 startLabel.Text = "GO!";
-                startTimer.Stop();
                 gameTimer.Start();
+            }
+            if (go == 0)
+            {
+                startLabel.Visible = false;
+                startTimer.Stop();
             }
 
             Refresh();
         }
+
     }
 }

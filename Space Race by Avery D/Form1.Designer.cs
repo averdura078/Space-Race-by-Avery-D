@@ -49,6 +49,7 @@
             this.player1ScoreLabel.Name = "player1ScoreLabel";
             this.player1ScoreLabel.Size = new System.Drawing.Size(63, 45);
             this.player1ScoreLabel.TabIndex = 0;
+            this.player1ScoreLabel.Text = "0";
             // 
             // player2ScoreLabel
             // 
@@ -58,6 +59,7 @@
             this.player2ScoreLabel.Name = "player2ScoreLabel";
             this.player2ScoreLabel.Size = new System.Drawing.Size(63, 45);
             this.player2ScoreLabel.TabIndex = 1;
+            this.player2ScoreLabel.Text = "0";
             this.player2ScoreLabel.TextAlign = System.Drawing.ContentAlignment.TopRight;
             // 
             // startTimer
