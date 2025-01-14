@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Media;
+using System.Threading;
 
 namespace Space_Race_by_Avery_D
 {
@@ -35,7 +37,6 @@ namespace Space_Race_by_Avery_D
         //meteors
         List<Rectangle> meteors = new List<Rectangle>();
         List<int> meteorSpeeds = new List<int>();
-        // List<int> meteorSides = new List<int>();
         //meteor positions random number generator
         Random randGen = new Random();
         //meteor colour
@@ -49,12 +50,16 @@ namespace Space_Race_by_Avery_D
         int countdown = 3;
         int go = 5;
 
-
-
+        //sounds
+        //explosion sound player
+        SoundPlayer collision = new SoundPlayer(Properties.Resources.explode);
+        //start sound player
+        SoundPlayer start = new SoundPlayer(Properties.Resources.three);
 
         public Form1()
         {
             InitializeComponent();
+            start.Play();
         }
 
         private void Form1_KeyUp(object sender, KeyEventArgs e)
@@ -105,7 +110,7 @@ namespace Space_Race_by_Avery_D
             e.Graphics.FillEllipse(blackBrush, player1.X + 5, player1.Y + 5, 10, 10);
             if (wPressed == true)
             {
-                e.Graphics.FillEllipse(fireBrush, player1.X + 2, player1.Height, 4, 15) ;
+                e.Graphics.FillEllipse(fireBrush, player1.X + 5, player1.Y + player1.Height, 10, 15);
             }
 
             //player 1
@@ -116,7 +121,7 @@ namespace Space_Race_by_Avery_D
             e.Graphics.FillEllipse(blackBrush, player2.X + 5, player2.Y + 5, 10, 10);
             if (upPressed == true)
             {
-                //draw fire
+                e.Graphics.FillEllipse(fireBrush, player2.X + 5, player2.Y + player2.Height, 10, 15);
             }
 
             //meteors
@@ -155,7 +160,7 @@ namespace Space_Race_by_Avery_D
             int side = randGen.Next(1, 3);
             //random speed
             int randSpeed = randGen.Next(5, 14);
-            if (randValue < 20)
+            if (randValue < 22)
             {
                 int x = 0;
 
@@ -163,12 +168,14 @@ namespace Space_Race_by_Avery_D
                 {
                     //set meteor to appear on left
                     x = 0;
+                    //set meteor speed
                     meteorSpeeds.Add(randSpeed);
                 }
                 else if (side == 2)
                 {
                     //set meteor to appear on right
                     x = this.Width;
+                    //set meteor speed
                     meteorSpeeds.Add(randSpeed * -1);
                 }
 
@@ -190,41 +197,52 @@ namespace Space_Race_by_Avery_D
                 if (player1.IntersectsWith(meteors[i]))
                 {
                     player1.Y = this.Height - player1.Height;
-                    //play explosion sound
+                    collision.Play();
                 }
                 if (player2.IntersectsWith(meteors[i]))
                 {
                     player2.Y = this.Height - player2.Height;
-                    //play explosion sound
+                    collision.Play();
                 }
             }
 
             //check if either player reached the other side and add point
             if (player1.Y < 0)
             {
-                player1Score+=1;
+                player1Score += 1;
                 player1.Y = this.Height - player1.Height;
             }
             if (player2.Y < 0)
             {
-                player2Score+=1;
+                player2Score += 1;
                 player2.Y = this.Height - player2.Height;
             }
-            if (player1Score == 3 || player2Score == 3)
+            if (player1Score == 3)
             {
                 gameTimer.Stop();
+                winLabel.Text = $"RED ROCKET WINS {player1Score} to {player2Score}";
+                winLabel.Visible = true;
+                playAgainButton.Enabled = true;
+                playAgainButton.Visible = true;
+            }
+            if (player2Score == 3)
+            {
+                gameTimer.Stop();
+                winLabel.Text = $"BLUE ROCKET WINS {player2Score} to {player1Score}";
+                winLabel.Visible = true;
+                playAgainButton.Enabled = true;
+                playAgainButton.Visible = true;
             }
             //refresh scores
             player1ScoreLabel.Text = $"{player1Score}";
             player2ScoreLabel.Text = $"{player2Score}";
-
-
 
             Refresh();
         }
 
         private void startTimer_Tick(object sender, EventArgs e)
         {
+            startLabel.Visible = true;
             startLabel.Text = $"{countdown}";
             countdown--;
             go--;
@@ -242,5 +260,37 @@ namespace Space_Race_by_Avery_D
             Refresh();
         }
 
+        private void playAgainButton_Click(object sender, EventArgs e)
+        {
+            start.Play();
+
+            //reset and start countdown
+            countdown = 3;
+            go = 5;
+            startTimer.Start();
+
+            //reset scores
+            player1Score = 0;
+            player2Score = 0;
+
+            //reset meteors (get rid of them)
+            meteors.Clear();
+            meteorSpeeds.Clear();
+
+            //unpress keys
+            wPressed = false;
+            sPressed = false;
+            upPressed = false;
+            downPressed = false;
+
+            //reset positions to bottom
+            player1.Y = this.Height - player1.Height;
+            player2.Y = this.Height - player2.Height;
+
+            //hide play again until next time
+            playAgainButton.Enabled = false;
+            playAgainButton.Visible = false;
+            winLabel.Visible = false;
+        }
     }
 }

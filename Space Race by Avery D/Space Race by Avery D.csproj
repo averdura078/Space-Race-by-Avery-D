@@ -65,6 +65,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -78,6 +79,24 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\M4A1_Single-Kibblesbob-8540445.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\SEI_2104945131.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\AdobeStock_81556974.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\SEI_2104945131 %281%29.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Mouse Double Click-SoundBible.com-1373842393.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Mario Kart Race Start - QuickSounds.com.wav" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
