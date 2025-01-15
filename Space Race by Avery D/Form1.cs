@@ -10,6 +10,11 @@ using System.Windows.Forms;
 using System.Media;
 using System.Threading;
 
+//Space Race Game
+//Avery Durand
+//ISS3U
+//Mr. T
+
 namespace Space_Race_by_Avery_D
 {
     public partial class Form1 : Form
@@ -55,6 +60,17 @@ namespace Space_Race_by_Avery_D
         SoundPlayer collision = new SoundPlayer(Properties.Resources.explode);
         //start sound player
         SoundPlayer start = new SoundPlayer(Properties.Resources.three);
+        //win sound player
+        SoundPlayer win = new SoundPlayer(Properties.Resources.fanfare);
+        //point sound player
+        SoundPlayer point = new SoundPlayer(Properties.Resources.beep);
+        //lose sound player
+        SoundPlayer lose = new SoundPlayer(Properties.Resources.trombone);
+
+        //time bar
+        Pen whitePen = new Pen(Color.White, 6);
+        int timePosition = 0;
+        int probability = 0;
 
         public Form1()
         {
@@ -113,7 +129,7 @@ namespace Space_Race_by_Avery_D
                 e.Graphics.FillEllipse(fireBrush, player1.X + 5, player1.Y + player1.Height, 10, 15);
             }
 
-            //player 1
+            //player 2
             e.Graphics.FillEllipse(grayBrush, player2);
             e.Graphics.DrawLine(bluePen, player2.X - 3, player2.Y + 3, player2.X + player2.Width / 2 + 3, player2.Y - 10);
             e.Graphics.DrawLine(bluePen, player2.X + player2.Width + 3, player2.Y + 3, player2.X + player2.Width / 2 - 3, player2.Y - 10);
@@ -128,115 +144,32 @@ namespace Space_Race_by_Avery_D
             for (int i = 0; i < meteors.Count; i++)
             {
                 e.Graphics.FillEllipse(whiteBrush, meteors[i]);
+                if (meteorSpeeds[i] < 0)
+                {
+                    Rectangle nottail = new Rectangle(meteors[i].X - 1, meteors[i].Y - 1, 9, 9);
+                    e.Graphics.FillEllipse(fireBrush, nottail);
+                }
+                if (meteorSpeeds[i] > 0)
+                {
+                    Rectangle nottail = new Rectangle(meteors[i].X + meteors[i].Width - 4, meteors[i].Y - meteors[i].Height + 2, 9, 9);
+                    e.Graphics.FillEllipse(fireBrush, nottail);
+                }
             }
+
+            //time bar
+            e.Graphics.DrawLine(whitePen, 232, timePosition, 232, 400);
 
         }
 
         private void gameTimer_Tick(object sender, EventArgs e)
         {
-            //move player 1
-            if (wPressed == true && player1.Y > 0)
-            {
-                player1.Y -= playerSpeed;
-            }
-            if (sPressed == true && player1.Y < this.Height - player1.Height)
-            {
-                player1.Y += playerSpeed;
-            }
-            //move player 2
-            if (upPressed == true && player2.Y > 0)
-            {
-                player2.Y -= playerSpeed;
-            }
-            if (downPressed == true && player2.Y < this.Height - player2.Height)
-            {
-                player2.Y += playerSpeed;
-            }
-
-            //create meteors
-            //random percent occurrance
-            int randValue = randGen.Next(1, 101);
-            //left or right
-            int side = randGen.Next(1, 3);
-            //random speed
-            int randSpeed = randGen.Next(5, 14);
-            if (randValue < 22)
-            {
-                int x = 0;
-
-                if (side == 1)
-                {
-                    //set meteor to appear on left
-                    x = 0;
-                    //set meteor speed
-                    meteorSpeeds.Add(randSpeed);
-                }
-                else if (side == 2)
-                {
-                    //set meteor to appear on right
-                    x = this.Width;
-                    //set meteor speed
-                    meteorSpeeds.Add(randSpeed * -1);
-                }
-
-                int randY = randGen.Next(1, this.Height - 40);
-                Rectangle newMeteor = new Rectangle(x, randY, 20, 5);
-                meteors.Add(newMeteor);
-            }
-
-            //move meteors
-            for (int i = 0; i < meteors.Count; i++)
-            {
-                int x = meteors[i].X + meteorSpeeds[i];
-                meteors[i] = new Rectangle(x, meteors[i].Y, meteors[i].Width, meteors[i].Height);
-            }
-
-            //check for collision with meteors
-            for (int i = 0; i < meteors.Count; i++)
-            {
-                if (player1.IntersectsWith(meteors[i]))
-                {
-                    player1.Y = this.Height - player1.Height;
-                    collision.Play();
-                }
-                if (player2.IntersectsWith(meteors[i]))
-                {
-                    player2.Y = this.Height - player2.Height;
-                    collision.Play();
-                }
-            }
-
-            //check if either player reached the other side and add point
-            if (player1.Y < 0)
-            {
-                player1Score += 1;
-                player1.Y = this.Height - player1.Height;
-            }
-            if (player2.Y < 0)
-            {
-                player2Score += 1;
-                player2.Y = this.Height - player2.Height;
-            }
-            if (player1Score == 3)
-            {
-                gameTimer.Stop();
-                winLabel.Text = $"RED ROCKET WINS {player1Score} to {player2Score}";
-                winLabel.Visible = true;
-                playAgainButton.Enabled = true;
-                playAgainButton.Visible = true;
-            }
-            if (player2Score == 3)
-            {
-                gameTimer.Stop();
-                winLabel.Text = $"BLUE ROCKET WINS {player2Score} to {player1Score}";
-                winLabel.Visible = true;
-                playAgainButton.Enabled = true;
-                playAgainButton.Visible = true;
-            }
-            //refresh scores
-            player1ScoreLabel.Text = $"{player1Score}";
-            player2ScoreLabel.Text = $"{player2Score}";
-
+            MovePlayers();
+            CreateMeteors();
+            MoveMeteors();
+            CheckForCollision();
+            CheckForPoint();
+            CheckForWin();
+            MoveTimeBar();
             Refresh();
         }
 
@@ -291,6 +224,156 @@ namespace Space_Race_by_Avery_D
             playAgainButton.Enabled = false;
             playAgainButton.Visible = false;
             winLabel.Visible = false;
+
+            //reset time position
+            timePosition = 0;
+        }
+
+        public void MovePlayers()
+        {
+            //move player 1
+            if (wPressed == true && player1.Y > 0)
+            {
+                player1.Y -= playerSpeed;
+            }
+            if (sPressed == true && player1.Y < this.Height - player1.Height)
+            {
+                player1.Y += playerSpeed;
+            }
+            //move player 2
+            if (upPressed == true && player2.Y > 0)
+            {
+                player2.Y -= playerSpeed;
+            }
+            if (downPressed == true && player2.Y < this.Height - player2.Height)
+            {
+                player2.Y += playerSpeed;
+            }
+        }
+
+        public void CreateMeteors()
+        {
+            //create meteors
+            //random percent occurrance
+            int randValue = randGen.Next(1, 101);
+            //left or right
+            int side = randGen.Next(1, 3);
+            //random speed
+            int randSpeed = randGen.Next(5, 14);
+            if (randValue < 22)
+            {
+                int x = 0;
+
+                if (side == 1)
+                {
+                    //set meteor to appear on left
+                    x = 0;
+                    //set meteor speed
+                    meteorSpeeds.Add(randSpeed);
+                }
+                else if (side == 2)
+                {
+                    //set meteor to appear on right
+                    x = this.Width;
+                    //set meteor speed
+                    meteorSpeeds.Add(randSpeed * -1);
+                }
+
+                int randY = randGen.Next(1, this.Height - 40);
+                int randsizeX = randGen.Next(15, 40);
+                Rectangle newMeteor = new Rectangle(x, randY, randsizeX, 5);
+                meteors.Add(newMeteor);
+            }
+        }
+
+        public void MoveMeteors()
+        {
+            //move meteors
+            for (int i = 0; i < meteors.Count; i++)
+            {
+                int x = meteors[i].X + meteorSpeeds[i];
+                meteors[i] = new Rectangle(x, meteors[i].Y, meteors[i].Width, meteors[i].Height);
+            }
+        }
+
+        public void CheckForCollision()
+        {
+            //check for collision with meteors
+            for (int i = 0; i < meteors.Count; i++)
+            {
+                if (player1.IntersectsWith(meteors[i]))
+                {
+                    player1.Y = this.Height - player1.Height;
+                    //collision.Play();
+                }
+                if (player2.IntersectsWith(meteors[i]))
+                {
+                    player2.Y = this.Height - player2.Height;
+                    //collision.Play();
+                }
+            }
+
+        }
+
+        public void CheckForPoint()
+        {
+            //check if either player reached the other side and add point
+            if (player1.Y < 0)
+            {
+                point.Play();
+                player1Score += 1;
+                player1.Y = this.Height - player1.Height;
+            }
+            if (player2.Y < 0)
+            {
+                point.Play();
+                player2Score += 1;
+                player2.Y = this.Height - player2.Height;
+            }
+        }
+
+        public void CheckForWin()
+        {
+            if (player1Score == 3)
+            {
+                gameTimer.Stop();
+                win.Play();
+                winLabel.Text = $"RED ROCKET WINS {player1Score} to {player2Score}";
+                winLabel.Visible = true;
+                playAgainButton.Enabled = true;
+                playAgainButton.Visible = true;
+            }
+            if (player2Score == 3)
+            {
+                gameTimer.Stop();
+                win.Play();
+                winLabel.Text = $"BLUE ROCKET WINS {player2Score} to {player1Score}";
+                winLabel.Visible = true;
+                playAgainButton.Enabled = true;
+                playAgainButton.Visible = true;
+            }
+            //refresh scores
+            player1ScoreLabel.Text = $"{player1Score}";
+            player2ScoreLabel.Text = $"{player2Score}";
+        }
+
+        public void MoveTimeBar()
+        {
+            //move time bar
+            probability++;
+            if (probability % 2 == 0)
+            {
+                timePosition++;
+                if (timePosition == 325)
+                {
+                    gameTimer.Stop();
+                    lose.Play();
+                    winLabel.Text = $"No one wins.";
+                    winLabel.Visible = true;
+                    playAgainButton.Enabled = true;
+                    playAgainButton.Visible = true;
+                }
+            }
         }
     }
 }

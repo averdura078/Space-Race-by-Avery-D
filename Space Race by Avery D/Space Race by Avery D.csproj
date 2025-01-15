@@ -98,5 +98,14 @@
   <ItemGroup>
     <None Include="Resources\Mario Kart Race Start - QuickSounds.com.wav" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Short_triumphal_fanfare-John_Stracke-815794903 %281%29.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Robot_blip-Marianne_Gagnon-120342607.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Sad_Trombone-Joe_Lamb-665429450.wav" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
