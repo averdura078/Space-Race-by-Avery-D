@@ -166,6 +166,7 @@ namespace Space_Race_by_Avery_D
             MovePlayers();
             CreateMeteors();
             MoveMeteors();
+            RemoveMeteors();
             CheckForCollision();
             CheckForPoint();
             CheckForWin();
@@ -375,5 +376,18 @@ namespace Space_Race_by_Avery_D
                 }
             }
         }
+
+        public void RemoveMeteors()
+        {
+            for (int i = 0; i < meteors.Count; i++)
+            {
+                if (meteors[i].X < 0 || meteors[i].X > this.Width)
+                {
+                    meteors.RemoveAt(i);
+                    meteorSpeeds.RemoveAt(i);
+                }
+            }
+        }
+
     }
 }
